@@ -1,0 +1,10 @@
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+
+    KlapprothKoch\ContaoEventNewsCategories\:
+        resource: '../src/'
+        exclude:
+            - '../src/ContaoManager/'
+            - '../src/ContaoEventNewsCategoriesBundle.php'
