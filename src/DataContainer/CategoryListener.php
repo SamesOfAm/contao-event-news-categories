@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace KlapprothKoch\ContaoEventNewsCategories\DataContainer;
 
+use Contao\CoreBundle\DependencyInjection\Attribute\AsCallback;
 use Contao\DataContainer;
 use Contao\StringUtil;
 use Doctrine\DBAL\Connection;
@@ -14,21 +15,25 @@ class CategoryListener
     {
     }
 
+    #[AsCallback(table: 'tl_news_category', target: 'fields.cssClass.save')]
     public function generateNewsCssClass(string $value, DataContainer $dc): string
     {
         return $this->generateCssClass($value, (string) ($dc->activeRecord?->name ?? ''));
     }
 
+    #[AsCallback(table: 'tl_event_category', target: 'fields.cssClass.save')]
     public function generateEventCssClass(string $value, DataContainer $dc): string
     {
         return $this->generateCssClass($value, (string) ($dc->activeRecord?->name ?? ''));
     }
 
+    #[AsCallback(table: 'tl_news', target: 'fields.newsCategories.options')]
     public function getNewsCategories(): array
     {
         return $this->fetchCategoryOptions('tl_news_category');
     }
 
+    #[AsCallback(table: 'tl_calendar_events', target: 'fields.eventCategories.options')]
     public function getEventCategories(): array
     {
         return $this->fetchCategoryOptions('tl_event_category');

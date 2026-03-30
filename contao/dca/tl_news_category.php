@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 use Contao\DC_Table;
 use Contao\DataContainer;
-use KlapprothKoch\ContaoEventNewsCategories\DataContainer\CategoryListener;
 
 $GLOBALS['TL_DCA']['tl_news_category'] = [
     'config' => [
@@ -73,9 +72,6 @@ $GLOBALS['TL_DCA']['tl_news_category'] = [
             'exclude' => true,
             'inputType' => 'text',
             'eval' => ['tl_class' => 'w50'],
-            'save_callback' => [
-                [CategoryListener::class, 'generateNewsCssClass'],
-            ],
             'sql' => ['type' => 'string', 'length' => 255, 'default' => ''],
         ],
     ],
