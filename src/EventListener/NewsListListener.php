@@ -9,17 +9,24 @@ use Contao\Model\Collection;
 use Contao\NewsModel;
 use Doctrine\DBAL\ArrayParameterType;
 use Doctrine\DBAL\Connection;
-use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\RequestStack;
 
 class NewsListListener
 {
-    public function __construct(private readonly Connection $connection)
-    {
+    public function __construct(
+        private readonly Connection $connection,
+        private readonly RequestStack $requestStack,
+    ) {
     }
 
     #[AsHook('newsListCountItems')]
-    public function countItems(array $newsArchives, ?bool $featured, Request $request): int|false
+    public function countItems(array $newsArchives, ?bool $featured, object $module): int|false
     {
+        $request = $this->requestStack->getCurrentRequest();
+        if (null === $request) {
+            return false;
+        }
+
         $categoryClass = $request->query->get('category', '');
         if ('' === $categoryClass) {
             return false;
@@ -52,8 +59,13 @@ class NewsListListener
     }
 
     #[AsHook('newsListFetchItems')]
-    public function fetchItems(array $newsArchives, ?bool $featured, int $limit, int $offset, Request $request): Collection|array|false
+    public function fetchItems(array $newsArchives, ?bool $featured, int $limit, int $offset, object $module): Collection|array|false
     {
+        $request = $this->requestStack->getCurrentRequest();
+        if (null === $request) {
+            return false;
+        }
+
         $categoryClass = $request->query->get('category', '');
         if ('' === $categoryClass) {
             return false;
