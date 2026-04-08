@@ -6,7 +6,10 @@ namespace KlapprothKoch\ContaoEventNewsCategories\EventListener;
 
 use Contao\CoreBundle\DependencyInjection\Attribute\AsHook;
 use Contao\Model\Collection;
+use Contao\Module;
 use Contao\NewsModel;
+use Contao\StringUtil;
+use Contao\Template;
 use Doctrine\DBAL\ArrayParameterType;
 use Doctrine\DBAL\Connection;
 use Symfony\Component\HttpFoundation\RequestStack;
@@ -104,6 +107,25 @@ class NewsListListener
         }
 
         return NewsModel::findMultipleByIds($ids, ['order' => 'date DESC']);
+    }
+
+    #[AsHook('parseArticles')]
+    public function addCategoriesToTemplate(Template $template, array $row, Module $module): void
+    {
+        $ids = StringUtil::deserialize($row['newsCategories'] ?? '', true);
+
+        if (empty($ids)) {
+            $template->newsCategories = [];
+            return;
+        }
+
+        $rows = $this->connection->fetchAllAssociative(
+            'SELECT name, cssClass FROM tl_news_category WHERE id IN (?)',
+            [$ids],
+            [ArrayParameterType::INTEGER]
+        );
+
+        $template->newsCategories = $rows;
     }
 
     private function findCategoryByClass(string $table, string $cssClass): ?array
