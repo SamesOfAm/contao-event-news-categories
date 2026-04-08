@@ -7,12 +7,18 @@ namespace KlapprothKoch\ContaoEventNewsCategories\DataContainer;
 use Contao\CoreBundle\DependencyInjection\Attribute\AsCallback;
 use Contao\DataContainer;
 use Contao\StringUtil;
+use Contao\System;
 use Doctrine\DBAL\Connection;
 
 class CategoryListener
 {
-    public function __construct(private readonly Connection $connection)
+    public function __construct(private ?Connection $connection = null)
     {
+    }
+
+    private function getConnection(): Connection
+    {
+        return $this->connection ??= System::getContainer()->get('database_connection');
     }
 
     #[AsCallback(table: 'tl_news_category', target: 'fields.cssClass.save')]
@@ -50,7 +56,7 @@ class CategoryListener
 
     private function fetchCategoryOptions(string $table): array
     {
-        $rows = $this->connection->fetchAllAssociative(
+        $rows = $this->getConnection()->fetchAllAssociative(
             "SELECT id, name FROM {$table} ORDER BY name"
         );
 
