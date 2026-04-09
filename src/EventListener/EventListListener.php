@@ -6,6 +6,8 @@ namespace KlapprothKoch\ContaoEventNewsCategories\EventListener;
 
 use Contao\CoreBundle\DependencyInjection\Attribute\AsHook;
 use Contao\StringUtil;
+use Contao\Template;
+use Doctrine\DBAL\ArrayParameterType;
 use Doctrine\DBAL\Connection;
 use Symfony\Component\HttpFoundation\RequestStack;
 
@@ -78,5 +80,28 @@ class EventListListener
         }
 
         return $events;
+    }
+
+    #[AsHook('parseTemplate')]
+    public function addCategoriesToTemplate(Template $template): void
+    {
+        if (!str_starts_with($template->getName(), 'event_')) {
+            return;
+        }
+
+        $ids = StringUtil::deserialize($template->eventCategories ?? '', true);
+
+        if (empty($ids)) {
+            $template->eventCategories = [];
+            return;
+        }
+
+        $rows = $this->connection->fetchAllAssociative(
+            'SELECT name, cssClass FROM tl_event_category WHERE id IN (?)',
+            [$ids],
+            [ArrayParameterType::INTEGER]
+        );
+
+        $template->eventCategories = $rows;
     }
 }
