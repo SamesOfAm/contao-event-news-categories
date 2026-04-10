@@ -2,17 +2,8 @@
 
 declare(strict_types=1);
 
-use Contao\CoreBundle\DataContainer\PaletteManipulator;
-
-$GLOBALS['TL_DCA']['tl_module']['config']['onload_callback'][] = static function (): void {
-    PaletteManipulator::create()
-        ->addField('allowedNewsCategories', 'title_legend', PaletteManipulator::POSITION_APPEND)
-        ->applyToPalette('news_category_filter', 'tl_module');
-
-    PaletteManipulator::create()
-        ->addField('allowedEventCategories', 'title_legend', PaletteManipulator::POSITION_APPEND)
-        ->applyToPalette('event_category_filter', 'tl_module');
-};
+$GLOBALS['TL_DCA']['tl_module']['palettes']['news_category_filter'] = '{title_legend},name,headline;{config_legend},allowedNewsCategories;{template_legend:hide},customTpl;{protected_legend:hide},protected;{expert_legend:hide},guests,cssID';
+$GLOBALS['TL_DCA']['tl_module']['palettes']['event_category_filter'] = '{title_legend},name,headline;{config_legend},allowedEventCategories;{template_legend:hide},customTpl;{protected_legend:hide},protected;{expert_legend:hide},guests,cssID';
 
 $GLOBALS['TL_DCA']['tl_module']['fields']['allowedNewsCategories'] = [
     'exclude' => true,
