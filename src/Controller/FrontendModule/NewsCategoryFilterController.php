@@ -8,6 +8,7 @@ use Contao\CoreBundle\Controller\FrontendModule\AbstractFrontendModuleController
 use Contao\CoreBundle\DependencyInjection\Attribute\AsFrontendModule;
 use Contao\CoreBundle\Twig\FragmentTemplate;
 use Contao\ModuleModel;
+use Contao\StringUtil;
 use Doctrine\DBAL\Connection;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -21,9 +22,19 @@ class NewsCategoryFilterController extends AbstractFrontendModuleController
 
     protected function getResponse(FragmentTemplate $template, ModuleModel $model, Request $request): Response
     {
-        $rows = $this->connection->fetchAllAssociative(
-            'SELECT id, name, cssClass FROM tl_news_category ORDER BY name'
-        );
+        $allowedIds = StringUtil::deserialize($model->allowedNewsCategories, true);
+
+        if (!empty($allowedIds)) {
+            $placeholders = implode(',', array_fill(0, count($allowedIds), '?'));
+            $rows = $this->connection->fetchAllAssociative(
+                "SELECT id, name, cssClass FROM tl_news_category WHERE id IN ($placeholders) ORDER BY name",
+                array_values($allowedIds)
+            );
+        } else {
+            $rows = $this->connection->fetchAllAssociative(
+                'SELECT id, name, cssClass FROM tl_news_category ORDER BY name'
+            );
+        }
 
         $activeClass = $request->query->get('category', '');
         $basePath = $request->getBaseUrl() . $request->getPathInfo();
