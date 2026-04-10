@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
-$GLOBALS['TL_DCA']['tl_module']['palettes']['news_category_filter'] = '{title_legend},name,headline;{config_legend},allowedNewsCategories;{protected_legend:hide},protected;{expert_legend:hide},guests,cssID';
-$GLOBALS['TL_DCA']['tl_module']['palettes']['event_category_filter'] = '{title_legend},name,headline;{config_legend},allowedEventCategories;{protected_legend:hide},protected;{expert_legend:hide},guests,cssID';
+$GLOBALS['TL_DCA']['tl_module']['palettes']['news_category_filter'] = '{title_legend},name,headline,type;{config_legend},allowedNewsCategories;{protected_legend:hide},protected;{expert_legend:hide},guests,cssID';
+$GLOBALS['TL_DCA']['tl_module']['palettes']['event_category_filter'] = '{title_legend},name,headline,type;{config_legend},allowedEventCategories;{protected_legend:hide},protected;{expert_legend:hide},guests,cssID';
 
 $GLOBALS['TL_DCA']['tl_module']['fields']['allowedNewsCategories'] = [
     'exclude' => true,
