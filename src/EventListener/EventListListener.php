@@ -51,26 +51,32 @@ class EventListListener
         $categoryId = (string) $category['id'];
 
         foreach ($events as $date => $dayEvents) {
-            foreach ($dayEvents as $key => $event) {
-                $eventId = $event['id'] ?? null;
-                if (null === $eventId) {
-                    unset($events[$date][$key]);
-                    continue;
+            foreach ($dayEvents as $timestamp => $timestampEvents) {
+                foreach ($timestampEvents as $key => $event) {
+                    $eventId = $event['id'] ?? null;
+                    if (null === $eventId) {
+                        unset($events[$date][$timestamp][$key]);
+                        continue;
+                    }
+
+                    $row = $this->connection->fetchAssociative(
+                        'SELECT eventCategories FROM tl_calendar_events WHERE id = ?',
+                        [$eventId]
+                    );
+
+                    if (!$row) {
+                        unset($events[$date][$timestamp][$key]);
+                        continue;
+                    }
+
+                    $assigned = StringUtil::deserialize($row['eventCategories'], true);
+                    if (!\in_array($categoryId, array_map('strval', $assigned), true)) {
+                        unset($events[$date][$timestamp][$key]);
+                    }
                 }
 
-                $row = $this->connection->fetchAssociative(
-                    'SELECT eventCategories FROM tl_calendar_events WHERE id = ?',
-                    [$eventId]
-                );
-
-                if (!$row) {
-                    unset($events[$date][$key]);
-                    continue;
-                }
-
-                $assigned = StringUtil::deserialize($row['eventCategories'], true);
-                if (!\in_array($categoryId, array_map('strval', $assigned), true)) {
-                    unset($events[$date][$key]);
+                if (empty($events[$date][$timestamp])) {
+                    unset($events[$date][$timestamp]);
                 }
             }
 
