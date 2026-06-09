@@ -51,7 +51,7 @@ $GLOBALS['TL_DCA']['tl_event_category'] = [
         ],
     ],
     'palettes' => [
-        'default' => '{category_legend},name,cssClass',
+        'default' => '{category_legend},name,cssClass,parentGroup',
     ],
     'fields' => [
         'id' => [
@@ -73,6 +73,17 @@ $GLOBALS['TL_DCA']['tl_event_category'] = [
             'inputType' => 'text',
             'eval' => ['tl_class' => 'w50'],
             'sql' => ['type' => 'string', 'length' => 255, 'default' => ''],
+        ],
+        'parentGroup' => [
+            'exclude' => true,
+            'inputType' => 'select',
+            'options' => ['hsv', 'ingwe', 'kst'],
+            'eval' => [
+                'includeBlankOption' => true,
+                'tl_class' => 'w50',
+            ],
+            'sql' => ['type' => 'string', 'length' => 16, 'default' => '',
+            ],
         ],
     ],
 ];
