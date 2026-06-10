@@ -20,10 +20,9 @@ class EventListListener
     }
 
     /**
-     * Filters the event list by category.
-     * Note: the getAllEvents hook runs after events are fetched by date range,
-     * so we filter the already-collected array. Pagination reflects the
-     * unfiltered count, which is acceptable for calendar-style event lists.
+     * Filters the event list by category or parentGroup.
+     * - parentGroup: used on home page to show all events from sub-categories
+     * - category: used on sub-pages to show events from a specific category
      */
     #[AsHook('getAllEvents')]
     public function filterByCategory(array $events, array $calendars, int $timeStart, int $timeEnd, object $module): array
@@ -33,22 +32,41 @@ class EventListListener
             return $events;
         }
 
+        $parentGroup = $request->query->get('parentGroup', '');
         $categoryClass = $request->query->get('category', '');
-        if ('' === $categoryClass) {
+
+        $categoryIds = [];
+
+        if ('' !== $parentGroup) {
+            // Récupère TOUTES les catégories qui ont ce parentGroup
+            $categories = $this->connection->fetchAllAssociative(
+                'SELECT id FROM tl_event_category WHERE parentGroup = ?',
+                [$parentGroup]
+            );
+
+            if (empty($categories)) {
+                return [];
+            }
+
+            $categoryIds = array_column($categories, 'id');
+            $categoryIds = array_map('strval', $categoryIds);
+        }
+        elseif ('' !== $categoryClass) {
+            $category = $this->connection->fetchAssociative(
+                'SELECT id FROM tl_event_category WHERE cssClass = ?',
+                [$categoryClass]
+            );
+
+            if (!$category) {
+                return [];
+            }
+
+            $categoryIds = [(string) $category['id']];
+        }
+
+        if (empty($categoryIds)) {
             return $events;
         }
-
-        $category = $this->connection->fetchAssociative(
-            'SELECT id FROM tl_event_category WHERE cssClass = ?',
-            [$categoryClass]
-        );
-
-        if (!$category) {
-            // Category not found — return empty events
-            return [];
-        }
-
-        $categoryId = (string) $category['id'];
 
         foreach ($events as $date => $dayEvents) {
             foreach ($dayEvents as $timestamp => $timestampEvents) {
@@ -70,7 +88,10 @@ class EventListListener
                     }
 
                     $assigned = StringUtil::deserialize($row['eventCategories'], true);
-                    if (!\in_array($categoryId, array_map('strval', $assigned), true)) {
+                    $assignedStr = array_map('strval', $assigned);
+
+                    // Vérifie si l'événement appartient à au moins une catégorie filtrée
+                    if (empty(array_intersect($categoryIds, $assignedStr))) {
                         unset($events[$date][$timestamp][$key]);
                     }
                 }
@@ -103,7 +124,7 @@ class EventListListener
         }
 
         $rows = $this->connection->fetchAllAssociative(
-            'SELECT name, cssClass FROM tl_event_category WHERE id IN (?)',
+            'SELECT name, cssClass, parentGroup FROM tl_event_category WHERE id IN (?)',
             [$ids],
             [ArrayParameterType::INTEGER]
         );
