@@ -4,6 +4,12 @@ declare(strict_types=1);
 
 use Contao\DC_Table;
 use Contao\DataContainer;
+use Contao\CoreBundle\DataContainer\PaletteManipulator;
+
+
+if (empty($GLOBALS['TL_LANG']['tl_event_category']['parentGroup'])) {
+    $GLOBALS['TL_LANG']['tl_event_category']['parentGroup'] = ['Groupe parent', 'Sélectionnez le groupe parent'];
+}
 
 $GLOBALS['TL_DCA']['tl_event_category'] = [
     'config' => [
@@ -12,19 +18,20 @@ $GLOBALS['TL_DCA']['tl_event_category'] = [
         'sql' => [
             'keys' => [
                 'id' => 'primary',
+                'cssClass' => 'index', // Ajout d'un index pour cssClass
             ],
         ],
     ],
     'list' => [
         'sorting' => [
             'mode' => DataContainer::MODE_SORTED,
-            'fields' => ['name ASC'],
+            'fields' => ['parentGroup', 'name ASC'],
             'flag' => DataContainer::SORT_INITIAL_LETTER_ASC,
-            'panelLayout' => 'search,limit',
+            'panelLayout' => 'filter,search,limit',
         ],
         'label' => [
-            'fields' => ['name', 'cssClass'],
-            'format' => '%s <span style="color:#999;padding-left:3px">[%s]</span>',
+            'fields' => ['name', 'cssClass', 'parentGroup'],
+            'format' => '%s <span style="color:#999;padding-left:3px">[%s]</span> <span style="color:#666;padding-left:3px">[%s]</span>',
         ],
         'global_operations' => [
             'all' => [
@@ -51,7 +58,7 @@ $GLOBALS['TL_DCA']['tl_event_category'] = [
         ],
     ],
     'palettes' => [
-        'default' => '{category_legend},name,cssClass,parentGroup',
+        'default' => '{category_legend},name,cssClass;{group_legend},parentGroup;', // Palette mieux structurée
     ],
     'fields' => [
         'id' => [
@@ -70,20 +77,38 @@ $GLOBALS['TL_DCA']['tl_event_category'] = [
         ],
         'cssClass' => [
             'exclude' => true,
+            'search' => true,
             'inputType' => 'text',
-            'eval' => ['tl_class' => 'w50'],
+            'eval' => ['tl_class' => 'w50', 'unique' => true],
             'sql' => ['type' => 'string', 'length' => 255, 'default' => ''],
         ],
         'parentGroup' => [
-            'exclude' => true,
+            'exclude' => false,
+            'filter' => true,
+            'sorting' => true,
             'inputType' => 'select',
             'options' => ['hsv', 'ingwe', 'kst'],
+            'reference' => &$GLOBALS['TL_LANG']['tl_event_category']['parentGroupOptions'],
             'eval' => [
                 'includeBlankOption' => true,
-                'tl_class' => 'w50',
+                'tl_class' => 'w50 clr',
+                'chosen' => true,
+                'mandatory' => false,
             ],
-            'sql' => ['type' => 'string', 'length' => 16, 'default' => '',
-            ],
+            'sql' => ['type' => 'string', 'length' => 16, 'default' => ''],
         ],
     ],
 ];
+
+
+if (!isset($GLOBALS['TL_LANG']['tl_event_category']['parentGroupOptions'])) {
+    $GLOBALS['TL_LANG']['tl_event_category']['parentGroupOptions'] = [
+        'hsv' => 'HSV',
+        'ingwe' => 'Ingwe',
+        'kst' => 'KST',
+    ];
+}
+
+if (!isset($GLOBALS['TL_LANG']['tl_event_category']['group_legend'])) {
+    $GLOBALS['TL_LANG']['tl_event_category']['group_legend'] = 'Configuration du groupe';
+}
