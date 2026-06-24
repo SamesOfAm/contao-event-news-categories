@@ -34,11 +34,8 @@ class EventListListener
 
         $parentGroup = $request->query->get('parentGroup', '');
         $categoryClass = $request->query->get('category', '');
-
         $categoryIds = [];
-
         if ('' !== $parentGroup) {
-            // Récupère TOUTES les catégories qui ont ce parentGroup
             $categories = $this->connection->fetchAllAssociative(
                 'SELECT id FROM tl_event_category WHERE parentGroup = ?',
                 [$parentGroup]
